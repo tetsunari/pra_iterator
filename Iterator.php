@@ -7,15 +7,21 @@
 class User
 {
     protected $name;
+    protected $age;
 
-    function __construct($name)
+    function __construct($name, $age)
     {
         $this->name = $name;
+        $this->age = $age;
     }
 
     public function getName()
     {
         return $this->name;
+    }
+    public function getAge()
+    {
+        return $this->age;
     }
 }
 
@@ -40,12 +46,11 @@ class Roster
 }
 
 $roster = new Roster();
-// var_dump($roster);
-$roster->setUserList(new User('name 01'));
-$roster->setUserList(new User('name 02'));
-$roster->setUserList(new User('name 03'));
-$roster->setUserList(new User('name 04'));
+$roster->setUserList(new User('name 01', 20));
+$roster->setUserList(new User('name 02', 21));
+$roster->setUserList(new User('name 03', 22));
+$roster->setUserList(new User('name 04', 23));
 
 foreach($roster->getUserList() as $user) {
-    var_dump($user->getName());
+    var_dump($user->getName(), $user->getAge());
 }
