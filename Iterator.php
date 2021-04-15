@@ -1,39 +1,63 @@
 <?php
 
 /**
- * ユーザークラス
- * Class User
+ * Aggregate Interface
+ * Interface UsersAggregate
  */
-class User
-{
-    protected $name;
-    protected $age;
+interface UsersAggregateInterface {
+    public function createIterator();
+}
 
-    function __construct($name, $age)
+/**
+ * Iterator Interface
+ * Interface UserListIterator
+ */
+interface UserListIteratorInterface {
+    public function hasNext();
+
+    public function next();
+}
+
+/**
+ * Iterator Class
+ * Class UserListIterator
+ */
+class UserListIterator implements UserListIteratorInterface {
+
+    private $users;
+    private $position = 0;
+
+    function __construct($users)
     {
-        $this->name = $name;
-        $this->age = $age;
+        $this->users = $users;
     }
 
-    public function getName()
+    public function hasNext()
     {
-        return $this->name;
+        return isset($this->users[$this->position]);
     }
-    public function getAge()
+
+    public function next()
     {
-        return $this->age;
+        return $this->users[$this->position++];
     }
 }
 
 /**
- * 名簿クラス
- * Class Roster
+ * 集約オブジェクト
+ * Aggregate Class
+ * Class UsersAggregate
  */
-class Roster
-{
-    protected $userList = [];
+class UsersAggregate implements UsersAggregateInterface {
 
-    public function setUserList($user)
+    private $userList;
+
+    function __construct($users)
+    {
+        $this->userList = $users;
+    }
+
+    public function addUsersList($user)
     {
         $this->userList[] = $user;
     }
@@ -43,14 +67,37 @@ class Roster
         return $this->userList;
     }
 
+    public function createIterator()
+    {
+        return new UserListIterator($this->userList);
+    }
 }
 
-$roster = new Roster();
-$roster->setUserList(new User('name 01', 20));
-$roster->setUserList(new User('name 02', 21));
-$roster->setUserList(new User('name 03', 22));
-$roster->setUserList(new User('name 04', 23));
+/**
+ * クライアント
+ * Client Class
+ * Class RosterClient
+ */
+class RosterClient {
 
-foreach($roster->getUserList() as $user) {
-    var_dump($user->getName(), $user->getAge());
+    private $userIterator;
+
+    function __construct(UsersAggregateInterface $user_list)
+    {
+        $this->userIterator = $user_list->createIterator();
+    }
+
+    function getUsers()
+    {
+        while ($this->userIterator->hasNext()) {
+            $user = $this->userIterator->next();
+            echo sprintf("%s", $user);
+            echo "<br>";
+        }
+    }
 }
+
+$users = [ "name 01", "name 02", "name 03", "name 04", "name 05" ];
+$list = new RosterClient(new UsersAggregate($users));
+
+echo $list->getUsers()
