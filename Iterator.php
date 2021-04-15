@@ -39,7 +39,12 @@ class UserListIterator implements UserListIteratorInterface {
 
     public function next()
     {
-        return $this->users[$this->position++];
+        //return $this->users[$this->position++];
+
+        $users = $this->users[$this->position++];
+        $user['name'] = $users['name'];
+        $user['age'] = $users['age'];
+        return $user;
     }
 }
 
@@ -91,13 +96,21 @@ class RosterClient {
     {
         while ($this->userIterator->hasNext()) {
             $user = $this->userIterator->next();
-            echo sprintf("%s", $user);
+            // echo sprintf("%s", $user);
+            echo sprintf("%s (%s)", $user['name'], $user['age']);
             echo "<br>";
         }
     }
 }
 
-$users = [ "name 01", "name 02", "name 03", "name 04", "name 05" ];
+//$users = ["name 01", "name 02", "name 03", "name 04"];
+$users = [
+    ["name" => "name 01", "age" => 20],
+    ["name" => "name 02", "age" => 21],
+    ["name" => "name 03", "age" => 22],
+    ["name" => "name 04", "age" => 23]
+];
+
 $list = new RosterClient(new UsersAggregate($users));
 
-echo $list->getUsers()
+echo $list->getUsers();
