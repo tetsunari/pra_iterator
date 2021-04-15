@@ -19,11 +19,11 @@ interface UserListIteratorInterface {
 }
 
 /**
- * Iterator Class
- * Class UserListIterator
+ * イテレータの共通処理
+ * Trait SuperUserList
  */
-class UserListIterator implements UserListIteratorInterface {
-
+trait SuperUserList
+{
     private $users;
     private $position = 0;
 
@@ -36,25 +36,45 @@ class UserListIterator implements UserListIteratorInterface {
     {
         return isset($this->users[$this->position]);
     }
+}
+
+/**
+ * 名前のみを返すイテレータ
+ * Iterator Class
+ * Class UserListNameIterator
+ */
+class UserListNameIterator implements UserListIteratorInterface {
+
+    use SuperUserList;
 
     public function next()
     {
-        //return $this->users[$this->position++];
-
-        $users = $this->users[$this->position++];
-        $user['name'] = $users['name'];
-        $user['age'] = $users['age'];
-        return $user;
+        return $this->users[$this->position++];
     }
 }
 
 /**
- * 集約オブジェクト
- * Aggregate Class
- * Class UsersAggregate
+ * 名前と年齢を返すイテレータ
+ * Iterator Class
+ * Class UserListIterator
  */
-class UsersAggregate implements UsersAggregateInterface {
+class UserListIterator implements UserListIteratorInterface {
 
+    use SuperUserList;
+
+    public function next()
+    {
+        $user = $this->users[$this->position++];
+        return sprintf("%s (%s)", $user['name'], $user['age']);
+    }
+}
+
+/**
+ * 集約オブジェクトの共通処理
+ * Trait SuperUsersAggregate
+ */
+trait SuperUsersAggregate
+{
     private $userList;
 
     function __construct($users)
@@ -71,6 +91,26 @@ class UsersAggregate implements UsersAggregateInterface {
     {
         return $this->userList;
     }
+}
+
+/**
+ * 集約オブジェクト
+ * Aggregate Class
+ * Class UsersAggregate
+ */
+class UsersNameAggregate implements UsersAggregateInterface {
+
+    use SuperUsersAggregate;
+
+    public function createIterator()
+    {
+        return new UserListNameIterator($this->userList);
+    }
+}
+
+class UsersAggregate implements UsersAggregateInterface {
+
+    use SuperUsersAggregate;
 
     public function createIterator()
     {
@@ -96,21 +136,25 @@ class RosterClient {
     {
         while ($this->userIterator->hasNext()) {
             $user = $this->userIterator->next();
-            // echo sprintf("%s", $user);
-            echo sprintf("%s (%s)", $user['name'], $user['age']);
+            echo $user;
             echo "<br>";
         }
     }
 }
 
-//$users = ["name 01", "name 02", "name 03", "name 04"];
-$users = [
+$users_01 = ["name 01", "name 02", "name 03", "name 04"];
+$users_02 = [
     ["name" => "name 01", "age" => 20],
     ["name" => "name 02", "age" => 21],
     ["name" => "name 03", "age" => 22],
     ["name" => "name 04", "age" => 23]
 ];
 
-$list = new RosterClient(new UsersAggregate($users));
+
+$list = new RosterClient(new UsersNameAggregate($users_01));
+
+echo $list->getUsers();
+
+$list = new RosterClient(new UsersAggregate($users_02));
 
 echo $list->getUsers();
